@@ -2,6 +2,46 @@
 <html lang="en">
 <head>
 <script>
+/* ===== Calgary time everywhere (America/Edmonton, MST/MDT) — whatever time zone the phone is set to.
+   Every date/time the app reads or builds (today, cut-offs, Confirm time, 23:59 clearing, Excel dates, labels) follows Calgary. ===== */
+(function(){
+  var TZ="America/Edmonton",N=Date;
+  try{if(!(window.Intl&&Intl.DateTimeFormat))return;new Intl.DateTimeFormat("en-US",{timeZone:TZ}).format(0)}catch(e){return}
+  var F=new Intl.DateTimeFormat("en-US",{timeZone:TZ,hourCycle:"h23",year:"numeric",month:"numeric",day:"numeric",hour:"numeric",minute:"numeric",second:"numeric"}),C={};
+  function off(t){var k=Math.floor(t/900000);if(C[k]!==undefined)return C[k];var p={};
+    F.formatToParts(new N(t)).forEach(function(x){p[x.type]=x.value});var h=+p.hour;if(h===24)h=0;
+    var w=N.UTC(+p.year,+p.month-1,+p.day,h,+p.minute,+p.second),s=t-((t%1000)+1000)%1000;return (C[k]=Math.round((w-s)/60000))}
+  function wall(t){return new N(t+off(t)*60000)}
+  function fromWall(y,mo,d,h,mi,s,ms){var w=N.UTC(y,mo,d,h,mi,s,ms);if(w!==w)return NaN;var t=w-off(w)*60000;return w-off(t)*60000}
+  var P=N.prototype,setT=P.setTime,getT=P.getTime;
+  [["FullYear","getUTCFullYear"],["Month","getUTCMonth"],["Date","getUTCDate"],["Day","getUTCDay"],["Hours","getUTCHours"],["Minutes","getUTCMinutes"],["Seconds","getUTCSeconds"],["Milliseconds","getUTCMilliseconds"]].forEach(function(g){
+    var u=P[g[1]];P["get"+g[0]]=function(){var t=getT.call(this);return t!==t?NaN:u.call(wall(t))}});
+  P.getTimezoneOffset=function(){var t=getT.call(this);return t!==t?NaN:-off(t)};
+  function parts(d){var w=wall(getT.call(d));return [w.getUTCFullYear(),w.getUTCMonth(),w.getUTCDate(),w.getUTCHours(),w.getUTCMinutes(),w.getUTCSeconds(),w.getUTCMilliseconds()]}
+  function S(i,n){return function(){var t=getT.call(this);if(t!==t)return NaN;var a=parts(this);for(var j=0;j<n&&j<arguments.length;j++)a[i+j]=+arguments[j];return setT.call(this,fromWall(a[0],a[1],a[2],a[3],a[4],a[5],a[6]))}}
+  P.setFullYear=S(0,3);P.setMonth=S(1,2);P.setDate=S(2,1);P.setHours=S(3,4);P.setMinutes=S(4,3);P.setSeconds=S(5,2);P.setMilliseconds=S(6,1);
+  ["toLocaleString","toLocaleDateString","toLocaleTimeString"].forEach(function(k){var f=P[k];P[k]=function(loc,o){var q={};if(o)for(var x in o)q[x]=o[x];if(!q.timeZone)q.timeZone=TZ;return f.call(this,loc,q)}});
+  var DN=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],MN=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  function p2(n){return (n<10?"0":"")+n}
+  P.toDateString=function(){var t=getT.call(this);if(t!==t)return "Invalid Date";var w=wall(t);return DN[w.getUTCDay()]+" "+MN[w.getUTCMonth()]+" "+p2(w.getUTCDate())+" "+w.getUTCFullYear()};
+  P.toTimeString=function(){var t=getT.call(this);if(t!==t)return "Invalid Date";var w=wall(t),o=off(t),a=Math.abs(o);
+    return p2(w.getUTCHours())+":"+p2(w.getUTCMinutes())+":"+p2(w.getUTCSeconds())+" GMT"+(o<0?"-":"+")+p2(Math.floor(a/60))+p2(a%60)+" (Calgary Time)"};
+  P.toString=function(){var t=getT.call(this);return t!==t?"Invalid Date":this.toDateString()+" "+this.toTimeString()};
+  var LOC=/^(\d{4})-(\d\d)-(\d\d)[T ](\d\d):(\d\d)(?::(\d\d)(?:\.(\d{1,3})\d*)?)?$/;
+  function parseLocal(s){var m=LOC.exec(s);return m?fromWall(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+(m[6]||0),+((m[7]||"0")+"00").slice(0,3)):null}
+  function D(a,b,c,d,e,f,g){
+    if(!(this instanceof D))return new D().toString();
+    var n=arguments.length,r;
+    if(n===0)r=new N();
+    else if(n===1){var pl=typeof a==="string"?parseLocal(a.trim()):null;r=pl!==null?new N(pl):new N(a instanceof N?getT.call(a):a)}
+    else r=new N(fromWall(+a,+b,n>2?+c:1,n>3?+d:0,n>4?+e:0,n>5?+f:0,n>6?+g:0));
+    return r}
+  D.prototype=P;D.now=N.now;D.UTC=N.UTC;D.parse=function(s){var pl=typeof s==="string"?parseLocal(s.trim()):null;return pl!==null?pl:N.parse(s)};
+  try{Object.defineProperty(P,"constructor",{value:D,writable:true,configurable:true})}catch(x){}
+  window.Date=D;window.RJ_TZ=TZ;
+})();
+</script>
+<script>
 /* RJ ShiftLog Connect keeps its own data, separate from the Main RJ ShiftLog app */
 var LS=(function(){var P="rjc_",S=window.localStorage;
   function keys(){var a=[];for(var i=0;i<S.length;i++){var k=S.key(i);if(k&&k.indexOf(P)===0)a.push(k.slice(P.length))}return a}
