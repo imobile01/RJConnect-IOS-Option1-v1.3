@@ -1,6 +1,6 @@
 {
-  "name": "RJ ShiftLog Connect",
-  "short_name": "RJ Connect",
+  "name": "RJ ShiftLog",
+  "short_name": "RJ ShiftLog",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

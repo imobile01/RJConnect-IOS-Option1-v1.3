@@ -55,7 +55,7 @@ var LS=(function(){var P="rjc_",S=window.localStorage;
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0a84ff">
-<meta name="apple-mobile-web-app-title" content="RJ Connect">
+<meta name="apple-mobile-web-app-title" content="RJ ShiftLog">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png">
@@ -3140,13 +3140,16 @@ o2Render(true);
 .chbar textarea:focus{border-color:#0a84ff}
 .chbar button{flex:0 0 auto;border:0;border-radius:20px;background:#0a84ff;color:#fff;font-weight:800;font-size:16px;padding:11px 16px}
 .chbar button:disabled{opacity:.45}
+.chname{border:1px solid rgba(10,132,255,.35);background:rgba(10,132,255,.10);border-radius:16px;padding:10px 12px;margin:0 0 10px;font-size:14px}
+.chname b{display:block;font-size:15px}.chname span{color:var(--mute);font-size:13px}
+.chname input{flex:1;font:inherit;font-size:16px;padding:10px 14px;border-radius:20px;border:1px solid var(--line);background:var(--card);color:var(--text);min-width:0}
 </style>
 <script>
 /* ===== Option 2 chat: Main (office) <-> each RJ Connect staff account. Firebase: /chat/{account}/{msg}, /chatSeen/{account} ===== */
 var CH_LS=(typeof LS!=="undefined")?LS:localStorage,CH_ROLE=(typeof C_TEAM!=="undefined")?"s":"m",CH_KEEP=30*864e5,chOpen=null;
 function chAll(){return (syncR&&syncR.chat)||{}}
 function chSeenAll(){return (syncR&&syncR.chatSeen)||{}}
-function chMsgs(uk){var o=chAll()[uk]||{};return Object.keys(o).map(function(k){var m=o[k];if(!m||typeof m.t!=="string")return null;return {id:k,f:m.f,t:m.t,n:m.n||"",at:typeof m.at==="number"?m.at:sNow()}}).filter(Boolean).sort(function(a,b){return a.at-b.at||(a.id<b.id?-1:1)})}
+function chMsgs(uk){var o=chAll()[uk]||{};return Object.keys(o).map(function(k){var m=o[k];if(!m||typeof m.t!=="string")return null;return {id:k,f:m.f,t:m.t,n:m.n||"",d:m.d||"",at:typeof m.at==="number"?m.at:sNow()}}).filter(Boolean).sort(function(a,b){return a.at-b.at||(a.id<b.id?-1:1)})}
 function chSeen(uk,who){var s=chSeenAll()[uk]||{};return typeof s[who]==="number"?s[who]:0}
 function chOther(){return CH_ROLE==="m"?"s":"m"}
 function chUnread(uk){var seen=chSeen(uk,CH_ROLE),o=chOther();return chMsgs(uk).filter(function(m){return m.f===o&&m.at>seen}).length}
@@ -3155,11 +3158,12 @@ function chSend(uk,text){
   text=String(text||"").replace(/\s+$/,"").replace(/^\s+/,"").slice(0,1000);if(!text||!uk)return false;
   if(!syncOn()){toast("Not connected — turn on sync first.");return false}
   var id="c"+sNow().toString(36)+Math.random().toString(36).slice(2,6),me=chMe();
-  syncR.chat=syncR.chat||{};syncR.chat[uk]=syncR.chat[uk]||{};syncR.chat[uk][id]={f:CH_ROLE,t:text,n:me,at:sNow()};
+  syncR.chat=syncR.chat||{};syncR.chat[uk]=syncR.chat[uk]||{};syncR.chat[uk][id]={f:CH_ROLE,t:text,n:me,d:syncDevId(),at:sNow()};
   chSetSeen(uk);
-  syncReq("PUT","/chat/"+uk+"/"+id,{f:CH_ROLE,t:text,n:me,at:{".sv":"timestamp"}}).catch(function(){try{delete syncR.chat[uk][id]}catch(x){}toast("Message not sent — check the internet and try again.");chRender()});
+  syncReq("PUT","/chat/"+uk+"/"+id,{f:CH_ROLE,t:text,n:me,d:syncDevId(),at:{".sv":"timestamp"}}).catch(function(){try{delete syncR.chat[uk][id]}catch(x){}toast("Message not sent — check the internet and try again.");chRender()});
   return true}
 function chSetSeen(uk){syncR.chatSeen=syncR.chatSeen||{};syncR.chatSeen[uk]=Object.assign({},syncR.chatSeen[uk]||{});syncR.chatSeen[uk][CH_ROLE]=sNow();var o={};o[CH_ROLE]={".sv":"timestamp"};syncReq("PATCH","/chatSeen/"+uk,o).catch(function(){})}
+function chFrom(m){var dv=(syncR&&syncR.devices)||{},x=m.d&&dv[m.d],nm=x&&x.name&&x.name!=="Device"?x.name:"";return nm||(m.n&&m.n!=="Device"?m.n:"")||"Office"}
 function chDay(ms){var d=new Date(ms),t=new Date(),y=new Date(t.getFullYear(),t.getMonth(),t.getDate()-1);
   if(d.toDateString()===t.toDateString())return "Today";if(d.toDateString()===y.toDateString())return "Yesterday";
   return d.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"})}
@@ -3176,7 +3180,7 @@ function chThread(uk,force){
     var dy=chDay(m.at);if(dy!==lastDay){lastDay=dy;var d=document.createElement("div");d.className="chday";d.textContent=dy;box.appendChild(d)}
     var mine=m.f===CH_ROLE,b=document.createElement("div");b.className="chb "+(mine?"me":"th");b.textContent=m.t;box.appendChild(b);
     var t=document.createElement("div");t.className="cht "+(mine?"me":"th");
-    t.textContent=(CH_ROLE==="s"&&!mine?(m.n||"Office")+" · ":"")+(CH_ROLE==="m"&&mine&&m.n?m.n+" · ":"")+chTime(m.at)+(i===lastMine?(os>=m.at?" · Seen":" · Sent"):"");box.appendChild(t)});
+    t.textContent=(CH_ROLE==="s"&&!mine?chFrom(m)+" · ":"")+(CH_ROLE==="m"&&mine&&m.n?m.n+" · ":"")+chTime(m.at)+(i===lastMine?(os>=m.at?" · Seen":" · Sent"):"");box.appendChild(t)});
   if(atEnd||force)box.scrollTop=box.scrollHeight;
 }
 function chVisible(){var s=$("s-chat");return !!(s&&s.classList.contains("on")&&document.visibilityState==="visible")}
@@ -3206,7 +3210,7 @@ function chCur(){return CH_LS.getItem("acctKey")||null}
 function chBadges(){var uk=chCur(),n=uk?chUnread(uk):0,b=$("chBadge");if(b){b.hidden=!n;b.textContent=n>9?"9+":String(n)}}
 function chRender(force){chWire();var uk=chCur();if(!uk)return;chThread(uk,force);if(chVisible()&&chUnread(uk))chSetSeen(uk);chBadges()}
 var chBan=false;
-function chAlert(uk,m){var t=m.n||"Office",x=m.t.replace(/\s+/g," ").slice(0,140);
+function chAlert(uk,m){var t=chFrom(m),x=m.t.replace(/\s+/g," ").slice(0,140);
   try{$("o2BT").textContent=t;$("o2BX").textContent=x;$("o2Banner").classList.add("on");clearTimeout(o2BT);o2BT=setTimeout(function(){$("o2Banner").classList.remove("on")},6000);chBan=true}catch(e){}
   try{if(navigator.vibrate)navigator.vibrate([120,60,120])}catch(e){}
   try{if(window.RJAndroid&&RJAndroid.notifyShift)RJAndroid.notifyShift(t,m.t.slice(0,300))}catch(e){}}
