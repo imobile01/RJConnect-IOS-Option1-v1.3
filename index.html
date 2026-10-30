@@ -3176,7 +3176,7 @@ function chThread(uk,force){
     var dy=chDay(m.at);if(dy!==lastDay){lastDay=dy;var d=document.createElement("div");d.className="chday";d.textContent=dy;box.appendChild(d)}
     var mine=m.f===CH_ROLE,b=document.createElement("div");b.className="chb "+(mine?"me":"th");b.textContent=m.t;box.appendChild(b);
     var t=document.createElement("div");t.className="cht "+(mine?"me":"th");
-    t.textContent=(CH_ROLE==="s"&&!mine?"Office · ":"")+(CH_ROLE==="m"&&mine&&m.n?m.n+" · ":"")+chTime(m.at)+(i===lastMine?(os>=m.at?" · Seen":" · Sent"):"");box.appendChild(t)});
+    t.textContent=(CH_ROLE==="s"&&!mine?(m.n||"Office")+" · ":"")+(CH_ROLE==="m"&&mine&&m.n?m.n+" · ":"")+chTime(m.at)+(i===lastMine?(os>=m.at?" · Seen":" · Sent"):"");box.appendChild(t)});
   if(atEnd||force)box.scrollTop=box.scrollHeight;
 }
 function chVisible(){var s=$("s-chat");return !!(s&&s.classList.contains("on")&&document.visibilityState==="visible")}
@@ -3206,10 +3206,10 @@ function chCur(){return CH_LS.getItem("acctKey")||null}
 function chBadges(){var uk=chCur(),n=uk?chUnread(uk):0,b=$("chBadge");if(b){b.hidden=!n;b.textContent=n>9?"9+":String(n)}}
 function chRender(force){chWire();var uk=chCur();if(!uk)return;chThread(uk,force);if(chVisible()&&chUnread(uk))chSetSeen(uk);chBadges()}
 var chBan=false;
-function chAlert(uk,m){var t="💬 Message from the office",x=m.t.replace(/\s+/g," ").slice(0,140);
+function chAlert(uk,m){var t=m.n||"Office",x=m.t.replace(/\s+/g," ").slice(0,140);
   try{$("o2BT").textContent=t;$("o2BX").textContent=x;$("o2Banner").classList.add("on");clearTimeout(o2BT);o2BT=setTimeout(function(){$("o2Banner").classList.remove("on")},6000);chBan=true}catch(e){}
   try{if(navigator.vibrate)navigator.vibrate([120,60,120])}catch(e){}
-  try{if(window.RJAndroid&&RJAndroid.notifyShift)RJAndroid.notifyShift("Office",m.t.slice(0,300))}catch(e){}}
+  try{if(window.RJAndroid&&RJAndroid.notifyShift)RJAndroid.notifyShift(t,m.t.slice(0,300))}catch(e){}}
 var _chO2A=o2Alert;o2Alert=function(){chBan=false;return _chO2A.apply(this,arguments)};
 var _chBanC=$("o2Banner").onclick;$("o2Banner").onclick=function(){if(chBan){chBan=false;this.classList.remove("on");show("chat");return}return _chBanC.apply(this,arguments)};
 chBadges();
@@ -3290,7 +3290,7 @@ function pushSlot(el){var c=document.createElement("div");c.className="pushcard"
 /* ---- hooks: what sends a push ---- */
 var _pushChSend=chSend;chSend=function(uk,text){var ok=_pushChSend.apply(this,arguments);
   if(ok){var t=String(text).trim().slice(0,300);
-    if(PUSH_ROLE==="m")pushToStaff(uk,"Office",t,"chat");
+    if(PUSH_ROLE==="m")pushToStaff(uk,lsGet("syncDevName","")||"Office",t,"chat");
     else pushToMains(myName()||"Staff",t,"chat")}
   return ok};
 var _pushReq=syncReq;syncReq=function(method,path,body){
