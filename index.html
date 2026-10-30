@@ -50,7 +50,7 @@ var LS=(function(){var P="rjc_",S=window.localStorage;
   Object.defineProperty(o,"length",{get:function(){return keys().length}});return o})();
 </script>
 <meta charset="utf-8">
-<title>RJ ShiftLog Connect</title>
+<title>RJ ShiftLog</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3002,7 +3002,7 @@ function o2Lbl(e){var dt=o2Day(e.date);return dt.toLocaleDateString("en-US",{wee
 function o2Notifs(){try{return JSON.parse(LS.getItem("o2Notifs")||"[]")}catch(x){return []}}
 function o2SetNotifs(a){try{LS.setItem("o2Notifs",JSON.stringify(a.slice(0,60)))}catch(x){}}
 function o2Unread(){return o2Notifs().filter(function(n){return !n.r}).length}
-function o2Badge(){var u=o2Unread(),b=$("o2Badge");if(!b)return;b.hidden=!u;b.textContent=u>9?"9+":String(u);try{document.title=(u?"("+u+") ":"")+"RJ ShiftLog Connect"}catch(x){}}
+function o2Badge(){var u=o2Unread(),b=$("o2Badge");if(!b)return;b.hidden=!u;b.textContent=u>9?"9+":String(u);try{document.title=(u?"("+u+") ":"")+"RJ ShiftLog"}catch(x){}}
 var o2BT=null;
 function o2Alert(title,text){
   $("o2BT").textContent=title;$("o2BX").textContent=text;$("o2Banner").classList.add("on");clearTimeout(o2BT);o2BT=setTimeout(function(){$("o2Banner").classList.remove("on")},6000);
