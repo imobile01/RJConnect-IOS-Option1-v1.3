@@ -2272,8 +2272,9 @@ function applyWp(){
   var w=null;
   if(curWp&&curWp.type==="photo"&&photo)w={bg:'linear-gradient(rgba(0,0,0,.1),rgba(0,0,0,.1)),url("'+photo.data+'") center/cover no-repeat',tone:photo.tone};
   else if(curWp&&curWp.type==="preset")w=wpById(curWp.id);
-  if(!w){b.style.background="";b.style.backgroundAttachment="";r.removeAttribute("data-wp");return}
-  b.style.background=w.bg;b.style.backgroundAttachment="fixed";r.setAttribute("data-wp",w.tone);
+  var wl=document.getElementById("rjWall");b.style.background="";b.style.backgroundAttachment="";
+  if(!w){if(wl)wl.style.background="";r.removeAttribute("data-wp");return}
+  if(wl)wl.style.background=w.bg;else{b.style.background=w.bg;b.style.backgroundAttachment="fixed"}r.setAttribute("data-wp",w.tone);
 }
 function pickWp(c){
   curWp=c;
@@ -3528,7 +3529,7 @@ setTimeout(bdgSet,1500);
 <script>if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost")){navigator.serviceWorker.register("sw.js").catch(function(){})}
 /* ===== 12.31 / 2.21: 🔄 Refresh app — gets the newest version from the same link (GitHub Pages) and restarts.
    Your data (records, schedules, chat, sign-in) stays; only the app's stored copy is replaced. ===== */
-var RJ_VER="2.28";
+var RJ_VER="2.29";
 function rjRefresh(){
   if(window.RJAndroid){try{toast("Android: install the new app file (APK) to update this app.")}catch(x){}return}
   try{toast("Getting the newest version…",true)}catch(x){}
