@@ -61,7 +61,7 @@ var LS=(function(){var P="rjc_",S=window.localStorage;
 <link rel="icon" href="icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
 <style>
-:root{--bg:#f2f2f7;--card:#fff;--text:#111;--mute:#6b6b76;--acc:#0a84ff;--line:#e0e0e6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{--bg:#f2f2f7;--card:#fff;--text:#111;--mute:#6b6b76;--acc:#0a84ff;--line:#e0e0e6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:0}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#000;--card:#1c1c1e;--text:#f5f5f7;--mute:#9a9aa5;--line:#38383a}}
 :root[data-theme="dark"]{--bg:#000;--card:#1c1c1e;--text:#f5f5f7;--mute:#9a9aa5;--line:#38383a}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -135,6 +135,9 @@ h1{font-weight:700;letter-spacing:-.02em}
 .panel{background:var(--panel);border-radius:28px 28px 0 0;border-bottom:0}
 .box{border-radius:26px}
 .tabs{margin:0 16px 8px;padding:6px;border-radius:32px}
+/* full screen to the bottom edge */
+html{height:100%;background:var(--wall);background-attachment:fixed}#app{position:fixed;left:0;right:0;bottom:0;top:env(safe-area-inset-top,0px);height:auto}
+.tabs{margin-bottom:max(8px,calc(env(safe-area-inset-bottom,0px) - 6px))}
 .tabs button{border-radius:24px;transition:background .25s,color .25s}
 .tabs button.on{background:rgba(120,130,175,.22)}
 .save{margin:8px 0 0;border-radius:28px;border:1px solid rgba(255,255,255,.45);background:linear-gradient(180deg,rgba(64,160,255,.95),rgba(0,104,230,.92));box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 10px 26px rgba(10,132,255,.38)}
@@ -2821,6 +2824,8 @@ var _schAp=syncApply;syncApply=function(){var r=_schAp.apply(this,arguments);try
   <button type="button" class="row rowbtn" id="aRecF"><span>📁 Records</span><b><span id="aRecFn"></span> <span class="chv">›</span></b></button>
   <span id="aRecBtn" hidden></span><span id="aRecs" hidden></span>
   <button class="go" id="aSyncNow" type="button">↻ Sync now</button>
+  <button class="ghost" id="aRefresh" type="button">🔄 Refresh app</button>
+  <div class="sub" id="aVer" style="margin:-4px 0 6px;font-size:12px;opacity:.75"></div>
   <button class="ghost" id="aClose" type="button">Close</button>
   <button class="ghost red" id="aOut" type="button">Sign out</button>
 </div></div>
@@ -3142,7 +3147,7 @@ o2Render(true);
 .chthread{flex:1;min-height:0;display:flex;flex-direction:column}
 .chthread[hidden],.chlist[hidden]{display:none!important}
 .chmsgs{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;padding:6px 2px;display:flex;flex-direction:column}
-.chb .chimg{display:block;width:240px;max-width:100%;border-radius:14px;margin:6px 0 2px;cursor:zoom-in;box-shadow:0 4px 12px rgba(0,0,0,.12)} #chZoom{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.82);display:none;align-items:center;justify-content:center;padding:18px} #chZoom.on{display:flex} #chZoom img{max-width:100%;max-height:100%;border-radius:16px}  .chbar .chpb{flex:none;width:42px;height:42px;border:0;border-radius:50%;background:rgba(127,127,140,.14);font-size:20px;line-height:42px;padding:0;margin-right:6px;align-self:flex-end} .chb.ph{padding:4px;background:transparent!important;border:0!important} .chb .chphoto{display:block;width:230px;max-width:100%;border-radius:14px;cursor:zoom-in;background:#ddd;object-fit:cover} .chb .chphoto.ld{filter:blur(6px)} .chb .phs{font-size:12px;opacity:.7;margin-top:3px} .chb{max-width:80%;padding:8px 13px;border-radius:18px;margin:3px 0 1px;font-size:16px;line-height:1.32;white-space:pre-wrap;word-wrap:break-word;overflow-wrap:anywhere}
+.chb .chimg{display:block;width:120px;max-width:100%;border-radius:8px;margin:6px 0 2px;cursor:zoom-in;box-shadow:0 4px 12px rgba(0,0,0,.12)} #chZoom{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.82);display:none;align-items:center;justify-content:center;padding:18px} #chZoom.on{display:flex} #chZoom img{max-width:100%;max-height:100%;border-radius:16px}  .chbar .chpb{flex:none;width:42px;height:42px;border:0;border-radius:50%;background:rgba(127,127,140,.14);font-size:20px;line-height:42px;padding:0;margin-right:6px;align-self:flex-end} .chb.ph{padding:4px;background:transparent!important;border:0!important} .chb .chphoto{display:block;width:230px;max-width:100%;border-radius:14px;cursor:zoom-in;background:#ddd;object-fit:cover} .chb .chphoto.ld{filter:blur(6px)} .chb .phs{font-size:12px;opacity:.7;margin-top:3px} .chb{max-width:80%;padding:8px 13px;border-radius:18px;margin:3px 0 1px;font-size:16px;line-height:1.32;white-space:pre-wrap;word-wrap:break-word;overflow-wrap:anywhere}
 .chb.me{align-self:flex-end;background:#0a84ff;color:#fff;border-bottom-right-radius:6px}
 .chb.th{align-self:flex-start;background:var(--card);color:var(--text);border:1px solid var(--line);border-bottom-left-radius:6px}
 .cht{font-size:11px;color:var(--mute);margin:0 6px 5px}.cht.me{align-self:flex-end}.cht.th{align-self:flex-start}
@@ -3496,6 +3501,24 @@ document.addEventListener("visibilitychange",function(){if(document.visibilitySt
 setInterval(function(){try{bdgSet()}catch(x){}},3000);
 setTimeout(bdgSet,1500);
 </script>
-<script>if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost")){navigator.serviceWorker.register("sw.js").catch(function(){})}</script>
+<script>if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost")){navigator.serviceWorker.register("sw.js").catch(function(){})}
+/* ===== 12.31 / 2.21: 🔄 Refresh app — gets the newest version from the same link (GitHub Pages) and restarts.
+   Your data (records, schedules, chat, sign-in) stays; only the app's stored copy is replaced. ===== */
+var RJ_VER="2.23";
+function rjRefresh(){
+  if(window.RJAndroid){try{toast("Android: install the new app file (APK) to update this app.")}catch(x){}return}
+  try{toast("Getting the newest version…",true)}catch(x){}
+  var done=false;function go(){if(done)return;done=true;var p=[];
+    try{if(navigator.serviceWorker&&navigator.serviceWorker.getRegistrations)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.unregister()}))}))}catch(x){}
+    try{if(window.caches&&caches.keys)p.push(caches.keys().then(function(ks){return Promise.all(ks.filter(function(k){return k!=="rj-photos"}).map(function(k){return caches.delete(k)}))}))}catch(x){}
+    Promise.all(p).catch(function(){}).then(function(){try{sessionStorage.setItem("rjUpd",RJ_VER)}catch(x){}location.replace(location.pathname+"?u="+Date.now()+location.hash)})}
+  try{(typeof syncPush==="function"&&typeof syncOn==="function"&&syncOn()?syncPush():Promise.resolve()).then(go,go)}catch(x){go()}
+  setTimeout(go,4000)}
+(function(){var prev=null;try{prev=sessionStorage.getItem("rjUpd");sessionStorage.removeItem("rjUpd")}catch(x){}
+  try{if(/[?&]u=\d+/.test(location.search))history.replaceState(history.state,"",location.pathname+location.hash)}catch(x){}
+  if(prev)setTimeout(function(){try{toast(prev!==RJ_VER?"✓ Updated to version "+RJ_VER:"✓ Refreshed — version "+RJ_VER+" is the newest",true)}catch(x){}},1500)})();
+setTimeout(function(){var b=document.getElementById("aRefresh"),v=document.getElementById("aVer");if(v)v.textContent="Version "+RJ_VER+(window.RJAndroid?" · Android updates by installing the new APK":" · gets the newest version and restarts");
+  if(b)b.onclick=function(){try{document.getElementById("aClose").click()}catch(x){}choose2("Refresh the app?\n\nIt gets the newest version from the app link and restarts. You stay signed in and your shifts and chat stay.","Refresh","Cancel",rjRefresh,function(){})}},0);
+</script>
 </body>
 </html>
